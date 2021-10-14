@@ -63,9 +63,10 @@ fun ShowImage() {
     var offset by remember { mutableStateOf(Offset.Zero) }
     val state = rememberTransformableState { zoomChange, offsetChange, _ ->
         scale *= zoomChange
-        if (scale < 1f)
+        if (scale < 1f) {
             scale = 1f
-        offset += offsetChange
+            offset = Offset(0f, 0f)
+        }
     }
 
     Column() {
@@ -74,19 +75,32 @@ fun ShowImage() {
                 .pointerInput(Unit) {
                     detectTapGestures(
                         onDoubleTap = {
-                            if (scale == 1f) {
-                                scale = 2f
-                            } else scale = 1f
+                            scale = if (scale == 1f) {
+                                2f
+                            } else 1f
                         },
                     )
+                }
+                .pointerInput(Unit) {
+                    detectDragGestures { change, dragAmount ->
+                        if (scale > 1f) {
+                            change.consumeAllChanges()
+                            offsetX += dragAmount.x
+                            offsetY += dragAmount.y
+                        } else {
+                            offsetX += 0
+                            offsetY += 0
+                        }
+                    }
+
                 }
                 // apply other transformations like rotation and zoom
                 // on the pizza slice emoji
                 .graphicsLayer(
                     scaleX = scale,
                     scaleY = scale,
-                    translationX = offset.x,
-                    translationY = offset.y
+                    /*translationX = offset.x,
+                    translationY = offset.y*/
                 )
                 // add transformable to listen to multitouch transformation events
                 // after offset
@@ -94,29 +108,28 @@ fun ShowImage() {
                 .fillMaxSize()
                 //drag
                 .padding(5.dp)
-                .offset { IntOffset(offsetX.roundToInt(), 0) }
+                .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt())}
                 .draggable(
-                    orientation = Orientation.Horizontal,
-                    state = rememberDraggableState { delta ->
-                        if (scale == 1f) {
-                            d = image
-                            del = delta
-                            if (del > 0) {
-                                d++
-                            } else {
-                                d--
-                            }
-                            if (d > start + 17)
-                                d = start
-                            else if (d < start)
-                                d = start + 17
-                            image = d
-                            del = delta
-                        } else
-                            offsetX += delta
-                        delta
+                orientation = Orientation.Horizontal,
+                state = rememberDraggableState { delta ->
+                    if (scale == 1f) {
+                        d = image
+                        del = delta
+                        if (del > 0) {
+                            d++
+                        } else {
+                            d--
+                        }
+                        if (d > start + 17)
+                            d = start
+                        else if (d < start)
+                            d = start + 17
+                        image = d
+                        del = delta
                     }
-                ),
+                    delta
+                }
+            ),
             contentDescription = "",
             painter = painterResource(id = image)
         )
