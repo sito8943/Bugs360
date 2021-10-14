@@ -23,6 +23,27 @@ import androidx.compose.ui.unit.dp
 import com.sito.bugs360.ui.theme.Bugs360Theme
 import kotlin.math.roundToInt
 
+val ImageList = arrayOf<Int>(
+    R.drawable.ixodus_ricinus_a,
+    R.drawable.ixodus_ricinus_b,
+    R.drawable.ixodus_ricinus_c,
+    R.drawable.ixodus_ricinus_d,
+    R.drawable.ixodus_ricinus_e,
+    R.drawable.ixodus_ricinus_f,
+    R.drawable.ixodus_ricinus_g,
+    R.drawable.ixodus_ricinus_h,
+    R.drawable.ixodus_ricinus_i,
+    R.drawable.ixodus_ricinus_j,
+    R.drawable.ixodus_ricinus_k,
+    R.drawable.ixodus_ricinus_l,
+    R.drawable.ixodus_ricinus_m,
+    R.drawable.ixodus_ricinus_n,
+    R.drawable.ixodus_ricinus_o,
+    R.drawable.ixodus_ricinus_p,
+    R.drawable.ixodus_ricinus_q,
+    R.drawable.ixodus_ricinus_r
+)
+
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,27 +52,26 @@ class MainActivity : ComponentActivity() {
             Bugs360Theme {
                 // A surface container using the 'background' color from the theme
                 Surface(color = MaterialTheme.colors.background) {
-                    ShowImage()
+                    Photo360View(ImageList)
                 }
             }
         }
     }
 }
 
-@Preview
 @Composable
-fun ShowImage() {
-    var image by remember {
-        mutableStateOf(R.drawable.ixodus_ricinus_a)
+fun Photo360View(listOfImages: Array<Int>) {
+    var currentImage by remember {
+        mutableStateOf(listOfImages[0])
     }
-    val start = R.drawable.ixodus_ricinus_a
 
-    //var offsetX by remember { mutableStateOf(0f) }
-    var del by remember {
+    val beginningImage = listOfImages[0]
+
+    var lastDelta by remember {
         mutableStateOf(0f)
     }
 
-    var d by remember {
+    var currentDelta by remember {
         mutableStateOf(R.drawable.ixodus_ricinus_a)
     }
 
@@ -72,6 +92,8 @@ fun ShowImage() {
     Column() {
         Image(
             modifier = Modifier
+                //drag
+                .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt()) }
                 .pointerInput(Unit) {
                     detectTapGestures(
                         onDoubleTap = {
@@ -99,51 +121,35 @@ fun ShowImage() {
                 .graphicsLayer(
                     scaleX = scale,
                     scaleY = scale,
-                    /*translationX = offset.x,
-                    translationY = offset.y*/
                 )
                 // add transformable to listen to multitouch transformation events
                 // after offset
                 .transformable(state = state)
-                .fillMaxSize()
-                //drag
-                .padding(5.dp)
-                .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt())}
                 .draggable(
-                orientation = Orientation.Horizontal,
-                state = rememberDraggableState { delta ->
-                    if (scale == 1f) {
-                        d = image
-                        del = delta
-                        if (del > 0) {
-                            d++
-                        } else {
-                            d--
+                    orientation = Orientation.Horizontal,
+                    state = rememberDraggableState { delta ->
+                        if (scale == 1f) {
+                            currentDelta = currentImage
+                            lastDelta = delta
+                            if (lastDelta > 0) {
+                                currentDelta++
+                            } else {
+                                currentDelta--
+                            }
+                            if (currentDelta > beginningImage + 17)
+                                currentDelta = beginningImage
+                            else if (currentDelta < beginningImage)
+                                currentDelta = beginningImage + 17
+                            currentImage = currentDelta
+                            lastDelta = delta
                         }
-                        if (d > start + 17)
-                            d = start
-                        else if (d < start)
-                            d = start + 17
-                        image = d
-                        del = delta
+                        delta
                     }
-                    delta
-                }
-            ),
+                )
+                .fillMaxSize()
+                .padding(5.dp),
             contentDescription = "",
-            painter = painterResource(id = image)
+            painter = painterResource(id = currentImage)
         )
-        /*Text(text=image.toString())
-        Text(text=start.toString())
-        Text(text=d.toString())*/
-        /*Button(onClick = {
-            image++
-            if (image > start + 17)
-                image = start
-            else if (image < start - 17)
-                image = start + 18
-        }) {
-            Text(text = "add")
-        }*/
     }
 }
