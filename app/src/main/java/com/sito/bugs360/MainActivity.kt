@@ -71,21 +71,17 @@ fun Photo360View(listOfImages: Array<Int>) {
         mutableStateOf(0f)
     }
 
-    var currentDelta by remember {
-        mutableStateOf(R.drawable.ixodus_ricinus_a)
-    }
+    var currentIndex = 0
 
     var offsetX by remember { mutableStateOf(0f) }
     var offsetY by remember { mutableStateOf(0f) }
 
     // set up all transformation states
     var scale by remember { mutableStateOf(1f) }
-    var offset by remember { mutableStateOf(Offset.Zero) }
     val state = rememberTransformableState { zoomChange, offsetChange, _ ->
         scale *= zoomChange
         if (scale < 1f) {
             scale = 1f
-            offset = Offset(0f, 0f)
         }
     }
 
@@ -97,9 +93,13 @@ fun Photo360View(listOfImages: Array<Int>) {
                 .pointerInput(Unit) {
                     detectTapGestures(
                         onDoubleTap = {
-                            scale = if (scale == 1f) {
-                                2f
-                            } else 1f
+                            if (scale == 1f) {
+                                scale = 2f
+                            } else {
+                                scale = 1f
+                                offsetX = 0f
+                                offsetY = 0f
+                            }
                         },
                     )
                 }
@@ -110,8 +110,8 @@ fun Photo360View(listOfImages: Array<Int>) {
                             offsetX += dragAmount.x
                             offsetY += dragAmount.y
                         } else {
-                            offsetX += 0
-                            offsetY += 0
+                            offsetX = 0f
+                            offsetY = 0f
                         }
                     }
 
@@ -129,18 +129,18 @@ fun Photo360View(listOfImages: Array<Int>) {
                     orientation = Orientation.Horizontal,
                     state = rememberDraggableState { delta ->
                         if (scale == 1f) {
-                            currentDelta = currentImage
+                            currentIndex = currentImage
                             lastDelta = delta
                             if (lastDelta > 0) {
-                                currentDelta++
+                                currentIndex++
                             } else {
-                                currentDelta--
+                                currentIndex--
                             }
-                            if (currentDelta > beginningImage + 17)
-                                currentDelta = beginningImage
-                            else if (currentDelta < beginningImage)
-                                currentDelta = beginningImage + 17
-                            currentImage = currentDelta
+                            if (currentIndex > listOfImages[listOfImages.size - 1])
+                                currentIndex = beginningImage
+                            else if (currentIndex < beginningImage)
+                                currentIndex = listOfImages[listOfImages.size - 1]
+                            currentImage = currentIndex
                             lastDelta = delta
                         }
                     }
