@@ -12,6 +12,8 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -49,9 +51,30 @@ fun ShowImage() {
         mutableStateOf(R.drawable.ixodus_ricinus_a)
     }
 
+    // set up all transformation states
+    var scale by remember { mutableStateOf(1f) }
+    var offset by remember { mutableStateOf(Offset.Zero) }
+    val state = rememberTransformableState { zoomChange, offsetChange, _ ->
+        scale *= zoomChange
+        offset += offsetChange
+    }
+
     Column() {
         Image(
             modifier = Modifier
+                // apply other transformations like rotation and zoom
+                // on the pizza slice emoji
+                .graphicsLayer(
+                    scaleX = scale,
+                    scaleY = scale,
+                    translationX = offset.x,
+                    translationY = offset.y
+                )
+                // add transformable to listen to multitouch transformation events
+                // after offset
+                .transformable(state = state)
+                .fillMaxSize()
+                //drag
                 .padding(5.dp)
                 .draggable(
                     orientation = Orientation.Horizontal,
@@ -76,9 +99,9 @@ fun ShowImage() {
             contentDescription = "",
             painter = painterResource(id = image)
         )
-        Text(text=image.toString())
+        /*Text(text=image.toString())
         Text(text=start.toString())
-        Text(text=d.toString())
+        Text(text=d.toString())*/
         /*Button(onClick = {
             image++
             if (image > start + 17)
