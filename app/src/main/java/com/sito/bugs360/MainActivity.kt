@@ -143,7 +143,6 @@ fun Photo360View(listOfImages: Array<Int>) {
                             currentImage = currentDelta
                             lastDelta = delta
                         }
-                        delta
                     }
                 )
                 .fillMaxSize()
