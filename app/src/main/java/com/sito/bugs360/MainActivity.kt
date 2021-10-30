@@ -11,6 +11,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.graphicsLayer
@@ -41,25 +42,25 @@ class MainActivity : ComponentActivity() {
 @Preview
 @Composable
 fun ShowImage() {
-    var image by remember {
+    var image by rememberSaveable {
         mutableStateOf(R.drawable.ixodus_ricinus_a)
     }
     val start = R.drawable.ixodus_ricinus_a
 
     //var offsetX by remember { mutableStateOf(0f) }
-    var del by remember {
+    var del by rememberSaveable {
         mutableStateOf(0f)
     }
 
-    var d by remember {
+    var d by rememberSaveable {
         mutableStateOf(R.drawable.ixodus_ricinus_a)
     }
 
-    var offsetX by remember { mutableStateOf(0f) }
-    var offsetY by remember { mutableStateOf(0f) }
+    var offsetX by rememberSaveable { mutableStateOf(0f) }
+    var offsetY by rememberSaveable { mutableStateOf(0f) }
 
     // set up all transformation states
-    var scale by remember { mutableStateOf(1f) }
+    var scale by rememberSaveable { mutableStateOf(1f) }
     var offset by remember { mutableStateOf(Offset.Zero) }
     val state = rememberTransformableState { zoomChange, offsetChange, _ ->
         scale *= zoomChange
@@ -108,28 +109,28 @@ fun ShowImage() {
                 .fillMaxSize()
                 //drag
                 .padding(5.dp)
-                .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt())}
+                .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt()) }
                 .draggable(
-                orientation = Orientation.Horizontal,
-                state = rememberDraggableState { delta ->
-                    if (scale == 1f) {
-                        d = image
-                        del = delta
-                        if (del > 0) {
-                            d++
-                        } else {
-                            d--
+                    orientation = Orientation.Horizontal,
+                    state = rememberDraggableState { delta ->
+                        if (scale == 1f) {
+                            d = image
+                            del = delta
+                            if (del > 0) {
+                                d++
+                            } else {
+                                d--
+                            }
+                            if (d > start + 17)
+                                d = start
+                            else if (d < start)
+                                d = start + 17
+                            image = d
+                            del = delta
                         }
-                        if (d > start + 17)
-                            d = start
-                        else if (d < start)
-                            d = start + 17
-                        image = d
-                        del = delta
+                        delta
                     }
-                    delta
-                }
-            ),
+                ),
             contentDescription = "",
             painter = painterResource(id = image)
         )
